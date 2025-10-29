@@ -311,9 +311,9 @@ controller.cleanup()
 - Ensure proper threading (use coroutines for delays)
 - Verify OpenGL context is initialized
 
-## 📱 Requirements
+## Requirements
 
-- **Min SDK**: 24 (Android 5.0 Lollipop)
+- **Min SDK**: 24 (Android 7.0 Nougat)
 - **OpenGL ES**: 2.0+
 - **Jetpack Compose**: 1.5.0+ (for Compose APIs)
 
