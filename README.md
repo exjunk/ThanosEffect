@@ -345,17 +345,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
-- Original concept inspired by the MCU Infinity War snap effect
 - Based on the excellent article: [Building the Thanos Snap Effect](https://habr.com/ru/articles/799163/)
 - OpenGL ES rendering techniques
+- Medium article: [Building the Thanos Snap Effect Animation in Android with OpenGL & Jetpack compose](https://medium.com/@androiddevapps/building-the-thanos-snap-effect-animation-in-android-with-opengl-jetpack-compose-63c2c361ae25)
 
 ## 📞 Support
 
-- 📧 Email: hello@androiddevapps.com
-- 🐛 Issues: [GitHub Issues](https://github.com/exjunk/ThanosEffect/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/exjunk/ThanosEffect/discussions)
+-  Email: hello@androiddevapps.com
+-  Issues: [GitHub Issues](https://github.com/exjunk/ThanosEffect/issues)
 
 ---
 
