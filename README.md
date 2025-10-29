@@ -28,7 +28,7 @@ allprojects {
 
 ```gradle
 dependencies {
-    implementation 'com.github.yourusername:ThanosEffect:1.0.0'
+    implementation 'com.github.exjunk:ThanosEffect:1.0.0'
 }
 ```
 
