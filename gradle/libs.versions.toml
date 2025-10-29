@@ -24,6 +24,7 @@ kotlinSerialization = "2.2.20"
 kotlinxSerializationCore = "1.9.0"
 material3AdaptiveNav3 = "1.0.0-SNAPSHOT"
 foundation = "1.9.4"
+thanoseffect = "1.0.0"
 
 
 [libraries]
@@ -58,6 +59,7 @@ androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", vers
 # Optional add-on libraries
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+thanoseffect = { module = "com.github.exjunk:ThanosEffect", version.ref = "thanoseffect" }
 ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 

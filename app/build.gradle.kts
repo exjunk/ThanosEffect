@@ -8,7 +8,7 @@ android {
     namespace = "com.exjunk.thanos.effect"
 
     defaultConfig {
-        applicationId = "com.exjunk.lib.thanos.snap"
+        applicationId = "com.exjunk.thanos.effect"
         minSdk = 24
         targetSdk = 36
         compileSdk = 36
@@ -28,14 +28,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation3.ui.android)
     implementation(libs.androidx.compose.foundation)
+    //implementation(libs.thanoseffect)
     implementation(project(":VanishEffect"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
