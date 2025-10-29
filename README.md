@@ -1,4 +1,4 @@
-# 🔥 ThanosEffect Library
+# ThanosEffect Library
 
 [![](https://jitpack.io/v/exjunk/ThanosEffect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -32,7 +32,7 @@ dependencies {
 }
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Jetpack Compose (Recommended)
 
