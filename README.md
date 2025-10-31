@@ -1,236 +1,205 @@
-# ThanosEffect Library
+# VanishEffect Library - Thanos snap effect for Jetpack Compose and XML layouts
 
-[![](https://jitpack.io/v/exjunk/ThanosEffect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+A stunning Android library that creates the iconic Thanos snap disintegration effect for your UI elements. Powered by OpenGL ES 2.0 with seamless support for both **Jetpack Compose** and **traditional XML layouts**.
+Animation is similar  to Telegram's delete message animation 
 
+[![](https://jitpack.io/v/exjunk/vanish-effect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A powerful, easy-to-use Android library that creates the iconic Thanos "snap" dust disintegration effect on any View, Bitmap, or Composable. Built with OpenGL ES for smooth, performant animations.
+## Features
 
-![db7FfXI2VMwI2GlV](https://github.com/user-attachments/assets/df3ebff1-32f8-439d-8205-9ebc34e649d0)
+-  Smooth particle-based disintegration animation
+-  Full support for Jetpack Compose and XML layouts
+-  Hardware-accelerated OpenGL rendering
+-  True plug-and-play integration
+-  Customizable animation parameters
+-  Works with any UI element - text, images, cards, complex layouts
+-  Lightweight with minimal dependencies
 
+## Demo
+
+![Vanish Effect Demo](demo.gif)
 
 ## Installation
 
 ### Step 1: Add JitPack repository
 
-Add this to your root `build.gradle` or `settings.gradle`:
+Add JitPack to your root `build.gradle` or `settings.gradle.kts`:
 
+**Gradle (Groovy)**
 ```gradle
-allprojects {
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        ...
+        google()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+**Gradle (Kotlin DSL)**
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 ```
 
 ### Step 2: Add the dependency
 
+Add to your app-level `build.gradle`:
+
 ```gradle
 dependencies {
-    implementation 'com.github.exjunk:ThanosEffect:1.0.0'
+    implementation 'com.github.exjunk:ThanosEffect:1.0.1'
 }
 ```
 
 ## Quick Start
 
-### Jetpack Compose (Recommended)
+### Jetpack Compose
+
+The simplest way to add the vanish effect:
 
 ```kotlin
 @Composable
-fun MyScreen() {
-    ThanosEffect { snapEffect ->
-        Column {
-            Text("I don't feel so good...")
-            Button(onClick = { snapEffect.snap() }) {
-                Text("Snap Fingers")
-            }
-        }
-    }
-}
-```
-
-### Traditional Android Views
-
-```kotlin
-// Method 1: Extension Function (Easiest!)
-myView.snapWithThanosEffect(
-    duration = 2000f,
-    onComplete = { Log.d("Thanos", "Snapped!") }
-)
-
-// Method 2: Builder Pattern
-ThanosEffectBuilder(context)
-    .attachTo(myImageView)
-    .setDuration(2000f)
-    .setParticleSize(3f)
-    .setOnComplete { /* callback */ }
-    .build()
-    .snap()
-```
-
-### Snap a Bitmap
-
-```kotlin
-val bitmap = BitmapFactory.decodeResource(resources, R.drawable.image)
-bitmap.snapWithThanosEffect(
-    context = this,
-    containerView = rootLayout,
-    onComplete = { /* done */ }
-)
-```
-
-##  API Reference
-
-### Composable API
-
-#### `ThanosEffect`
-
-Main composable wrapper for adding snap effect to content.
-
-```kotlin
-@Composable
-fun ThanosEffect(
-    modifier: Modifier = Modifier,
-    duration: Float = 1800f,           // Animation duration in ms
-    particleSize: Float = 2f,          // Dust particle size
-    onComplete: (() -> Unit)? = null,  // Completion callback
-    content: @Composable (SnapEffect) -> Unit
-)
-```
-
-#### `SnapEffect` Interface
-
-Controller exposed to content for triggering animations.
-
-```kotlin
-interface SnapEffect {
-    fun snap(bitmap: Bitmap? = null)   // Trigger animation
-    fun reset()                         // Reset to initial state
-    val isAnimating: Boolean            // Check animation state
-}
-```
-
-### View API
-
-#### Extension Functions
-
-```kotlin
-// Snap any View directly
-fun View.snapWithThanosEffect(
-    duration: Float = 1800f,
-    particleSize: Float = 2f,
-    onComplete: (() -> Unit)? = null
-)
-
-// Snap a Bitmap in a container
-fun Bitmap.snapWithThanosEffect(
-    context: Context,
-    containerView: ViewGroup,
-    duration: Float = 1800f,
-    particleSize: Float = 2f,
-    onComplete: (() -> Unit)? = null
-)
-```
-
-#### Builder Pattern
-
-```kotlin
-class ThanosEffectBuilder(context: Context) {
-    fun attachTo(view: View): ThanosEffectBuilder
-    fun setDuration(durationMs: Float): ThanosEffectBuilder
-    fun setParticleSize(size: Float): ThanosEffectBuilder
-    fun setOnComplete(callback: () -> Unit): ThanosEffectBuilder
-    fun useBitmap(bitmap: Bitmap): ThanosEffectBuilder
-    fun build(): ThanosEffectController
-}
-```
-
-#### Controller
-
-```kotlin
-class ThanosEffectController {
-    fun snap()      // Trigger effect
-    fun reset()     // Reset view
-    fun cleanup()   // Release resources
-}
-```
-
-## Advanced Usage
-
-### Custom Duration and Particle Size
-
-```kotlin
-ThanosEffect(
-    duration = 3000f,      // 3 seconds
-    particleSize = 4f      // Larger particles
-) { snapEffect ->
-    // Your content
-}
-```
-
-### Sequential Snapping
-
-```kotlin
-@Composable
-fun SequentialSnap() {
-    var index by remember { mutableStateOf(0) }
-    val items = listOf("First", "Second", "Third")
+fun QuickStartExample() {
+    var glSurfaceView by remember { mutableStateOf<VanishGLSurfaceView?>(null) }
+    val controller = rememberVanishController(glSurfaceView)
+    var showContent by remember { mutableStateOf(true) }
     
-    if (index < items.size) {
-        ThanosEffect(
-            onComplete = { index++ }
-        ) { snapEffect ->
-            Text(items[index])
-            Button(onClick = { snapEffect.snap() }) {
-                Text("Snap")
-            }
-        }
-    }
-}
-```
+    val boxColor = Color.Blue
 
-### With ViewModel (Production Pattern)
-
-```kotlin
-class MyViewModel : ViewModel() {
-    private val _snapState = MutableStateFlow(false)
-    val snapState = _snapState.asStateFlow()
-    
-    fun triggerSnap() {
-        _snapState.value = true
-    }
-}
-
-@Composable
-fun MyScreen(viewModel: MyViewModel) {
-    val shouldSnap by viewModel.snapState.collectAsState()
-    
-    ThanosEffect { snapEffect ->
-        LaunchedEffect(shouldSnap) {
-            if (shouldSnap) {
-                snapEffect.snap()
+    VanishContainer(
+        onGLSurfaceViewCreated = { glSurfaceView = it }
+    ) {
+        if (showContent) {
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .background(boxColor)
+                    .vanishable(controller, backgroundColor = boxColor), //  Must match background!
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Snap me!", color = Color.White)
             }
         }
         
-        // Your content
+        Button(
+            onClick = {
+                controller.vanish()
+                showContent = false
+            }
+        ) {
+            Text("Snap!")
+        }
     }
 }
 ```
 
-### List Items
+> ** IMPORTANT:** Always pass `backgroundColor` to `.vanishable()` matching your composable's actual background color. This is required for accurate particle rendering.
+
+---
+
+## Detailed Usage Guide
+
+### Jetpack Compose
+
+#### Complete Example with Reset
 
 ```kotlin
-LazyColumn {
-    items(list) { item ->
-        ThanosEffect { snapEffect ->
-            Card {
-                // Item content
-                IconButton(onClick = { 
-                    snapEffect.snap()
-                    // Remove item after animation
-                }) {
-                    Icon(Icons.Default.Delete)
+@Composable
+fun VanishDemo() {
+    var glSurfaceView by remember { mutableStateOf<VanishGLSurfaceView?>(null) }
+    val controller = rememberVanishController(glSurfaceView)
+    
+    var showContent by remember { mutableStateOf(true) }
+    var isAnimating by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    
+    val backgroundColor = Color(0xFFCC3BBA)
+
+    VanishContainer(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        onGLSurfaceViewCreated = { view ->
+            glSurfaceView = view
+        }
+    ) {
+        if (showContent) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .width(300.dp)
+                    .height(200.dp)
+                    .background(backgroundColor)
+                    .vanishable(controller, backgroundColor = backgroundColor)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "THANOS",
+                        color = Color.White,
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Snap your fingers!",
+                        color = Color.White,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (showContent && !isAnimating) {
+                Button(
+                    onClick = {
+                        isAnimating = true
+                        controller.vanish()
+                        
+                        scope.launch {
+                            delay(100) // Small delay before hiding
+                            showContent = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE94560)
+                    )
+                ) {
+                    Text("Snap Fingers")
+                }
+            }
+
+            if (!showContent) {
+                Button(
+                    onClick = {
+                        showContent = true
+                        isAnimating = false
+                        controller.reset()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF0F3460)
+                    )
+                ) {
+                    Text("Reset ↺")
                 }
             }
         }
@@ -238,127 +207,763 @@ LazyColumn {
 }
 ```
 
-### Custom Bitmap Input
+> **TIMING:** Wait 100-200ms after calling `controller.vanish()` before hiding content. This allows the animation to capture the frame properly.
+
+#### Using with Cards and Complex Layouts
 
 ```kotlin
-ThanosEffect { snapEffect ->
-    Button(onClick = {
-        val customBitmap = createMyCustomBitmap()
-        snapEffect.snap(customBitmap)
-    }) {
-        Text("Snap Custom Bitmap")
+@Composable
+fun CardVanishExample() {
+    var glSurfaceView by remember { mutableStateOf<VanishGLSurfaceView?>(null) }
+    val controller = rememberVanishController(glSurfaceView)
+    var showCard by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+    
+    val cardColor = Color(0xFF6C63FF)
+
+    VanishContainer(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (showCard) {
+            Card(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .width(350.dp)
+                    .vanishable(controller, backgroundColor = cardColor), // Match card color
+                colors = CardDefaults.cardColors(
+                    containerColor = cardColor
+                ),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.White
+                    )
+                    Text(
+                        "Premium Feature",
+                        fontSize = 24.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "This will vanish in style!",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    Button(
+                        onClick = {
+                            controller.vanish()
+                            scope.launch {
+                                delay(100)
+                                showCard = false
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White
+                        )
+                    ) {
+                        Text("Vanish", color = cardColor)
+                    }
+                }
+            }
+        }
     }
 }
 ```
 
-## Use Cases
-
-- **Delete Animations** - Smooth item removal in lists
-- **Game Effects** - Character/enemy defeat animations
-- **UI Transitions** - Creative screen transitions
-- **Error States** - Visual feedback for errors
-- **Splash Screens** - Engaging app intros
-- **Photo Effects** - Creative image filters
-- **Tutorial Flows** - Attention-grabbing transitions
-
-##  Configuration
-
-### Performance Tuning
+#### Custom Animation Parameters
 
 ```kotlin
-// Faster, less detailed (better for low-end devices)
-ThanosEffect(
-    duration = 1000f,
-    particleSize = 4f
-) { ... }
+@Composable
+fun CustomAnimationExample() {
+    var glSurfaceView by remember { mutableStateOf<VanishGLSurfaceView?>(null) }
+    val controller = rememberVanishController(glSurfaceView)
 
-// Slower, more detailed (better for high-end devices)
-ThanosEffect(
-    duration = 3000f,
-    particleSize = 1f
-) { ... }
+    VanishContainer(
+        onGLSurfaceViewCreated = { view ->
+            glSurfaceView = view
+            
+            // Customize animation
+            view.setAnimationConfig(
+                duration = 2500f,    // Slower animation (2.5 seconds)
+                particleSize = 4f    // Larger particles
+            )
+        }
+    ) {
+        // Your content here
+    }
+}
 ```
 
-### Memory Management
+### XML Layouts (Traditional Views)
+
+#### Step 1: Add VanishGLSurfaceView to Layout
+
+Create your layout file (e.g., `activity_main.xml`):
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- GLSurfaceView MUST be added first for proper overlay -->
+    <com.vanisheffect.library.VanishGLSurfaceView
+        android:id="@+id/glSurfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Your content to vanish -->
+    <LinearLayout
+        android:id="@+id/contentView"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:background="#CC3BBA"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="THANOS"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Snap your fingers!"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+    <!-- Control buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/snapButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#E94560"
+            android:text="Snap Fingers" />
+
+        <Button
+            android:id="@+id/resetButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#0F3460"
+            android:text="Reset ↺"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</FrameLayout>
+```
+
+> **LAYOUT ORDER:** The `VanishGLSurfaceView` must be added as the first child in the FrameLayout to ensure proper z-ordering for the particle overlay.
+
+#### Step 2: Setup in Activity
 
 ```kotlin
-// For Android Views - cleanup when done
-val controller = ThanosEffectBuilder(context)
-    .attachTo(view)
-    .build()
-
-// In onDestroy or when done
-controller.cleanup()
+class MainActivity : AppCompatActivity() {
+    
+    private lateinit var glSurfaceView: VanishGLSurfaceView
+    private lateinit var contentView: View
+    private lateinit var snapButton: Button
+    private lateinit var resetButton: Button
+    private lateinit var controller: VanishController
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        // Initialize views
+        glSurfaceView = findViewById(R.id.glSurfaceView)
+        contentView = findViewById(R.id.contentView)
+        snapButton = findViewById(R.id.snapButton)
+        resetButton = findViewById(R.id.resetButton)
+        
+        // Attach vanish effect
+        controller = VanishEffect.attachToView(contentView, glSurfaceView)
+        
+        // Setup buttons
+        setupButtons()
+    }
+    
+    private fun setupButtons() {
+        snapButton.setOnClickListener {
+            controller.vanish()
+            
+            //Wait before hiding content
+            Handler(Looper.getMainLooper()).postDelayed({
+                contentView.visibility = View.GONE
+                snapButton.visibility = View.GONE
+                resetButton.visibility = View.VISIBLE
+            }, 100)
+        }
+        
+        resetButton.setOnClickListener {
+            contentView.visibility = View.VISIBLE
+            snapButton.visibility = View.VISIBLE
+            resetButton.visibility = View.GONE
+            controller.reset()
+            
+            // Re-attach after reset
+            contentView.post {
+                controller = VanishEffect.attachToView(contentView, glSurfaceView)
+            }
+        }
+    }
+    
+    // IMPORTANT: Properly handle GLSurfaceView lifecycle
+    override fun onPause() {
+        super.onPause()
+        glSurfaceView.onPause()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        glSurfaceView.onResume()
+    }
+}
 ```
 
-##  Troubleshooting
+> **LIFECYCLE:** Always call `glSurfaceView.onPause()` and `glSurfaceView.onResume()` in your Activity/Fragment lifecycle methods to prevent memory leaks and rendering issues.
 
-### Animation not showing
+#### Using in Fragments
 
-- Ensure the view/composable has proper dimensions
-- Check that OpenGL ES 2.0 is supported on device
-- Verify the view is visible before snapping
-
-### Performance issues
-
-- Increase `particleSize` (less particles = better performance)
-- Decrease `duration` (shorter animation = less computation)
-- Test on actual device, not emulator
-
-### Black screen or crash
-
-- Check bitmap is not null
-- Ensure proper threading (use coroutines for delays)
-- Verify OpenGL context is initialized
-
-## Requirements
-
-- **Min SDK**: 24 (Android 7.0 Nougat)
-- **OpenGL ES**: 2.0+
-- **Jetpack Compose**: 1.5.0+ (for Compose APIs)
-
-##  Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
+```kotlin
+class MyFragment : Fragment() {
+    
+    private lateinit var glSurfaceView: VanishGLSurfaceView
+    private lateinit var controller: VanishController
+    
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        glSurfaceView = view.findViewById(R.id.glSurfaceView)
+        val contentView = view.findViewById<View>(R.id.contentView)
+        
+        controller = VanishEffect.attachToView(contentView, glSurfaceView)
+    }
+    
+    //  Handle lifecycle in fragments too
+    override fun onPause() {
+        super.onPause()
+        glSurfaceView.onPause()
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        glSurfaceView.onResume()
+    }
+}
 ```
-Copyright 2025 exjunk
-
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
-##  Acknowledgments
-
-- Based on the excellent article: [Building the Thanos Snap Effect](https://habr.com/ru/articles/799163/)
-- OpenGL ES rendering techniques
-- Medium article: [Building the Thanos Snap Effect Animation in Android with OpenGL & Jetpack compose](https://medium.com/@androiddevapps/building-the-thanos-snap-effect-animation-in-android-with-opengl-jetpack-compose-63c2c361ae25)
-
-## 📞 Support
-
--  Email: hello@androiddevapps.com
--  Issues: [GitHub Issues](https://github.com/exjunk/ThanosEffect/issues)
 
 ---
 
-**Made with ❤️ for the Android community**
+## API Reference
 
-If this library helped you, please ⭐ star the repo!
+### VanishEffect (Object)
+
+Main entry point for the library.
+
+#### Methods
+
+```kotlin
+// Create controller for Compose (internal use by rememberVanishController)
+fun createController(glSurfaceView: VanishGLSurfaceView?): VanishController
+
+// Attach to XML View
+fun attachToView(view: View, glSurfaceView: VanishGLSurfaceView): VanishController
+```
+
+### VanishController (Class)
+
+Controls the animation lifecycle.
+
+#### Methods
+
+```kotlin
+// Trigger vanish animation
+fun vanish()
+
+// Reset animation state
+fun reset()
+```
+
+#### Internal Methods (used by modifiers)
+
+```kotlin
+internal fun updatePicture(picture: Picture)
+internal fun updateBitmap(bitmap: Bitmap)
+internal fun updateBounds(bounds: Rect)
+internal fun updateBackgroundColor(color: Color)
+```
+
+### VanishGLSurfaceView (Class)
+
+Custom GLSurfaceView that renders the particle effect.
+
+#### XML Attributes
+
+```xml
+<com.vanisheffect.library.VanishGLSurfaceView
+    android:id="@+id/glSurfaceView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+
+#### Methods
+
+```kotlin
+// Configure animation parameters
+fun setAnimationConfig(
+    duration: Float = 1800f,    // Animation duration in milliseconds
+    particleSize: Float = 2f     // Size of each particle
+)
+
+// Manual control (advanced usage)
+fun startAnimation(picture: Picture, rect: Rect, backgroundColor: Int)
+fun startAnimationWithBitmap(bitmap: Bitmap, rect: Rect)
+fun resetAnimation()
+```
+
+#### Lifecycle Methods
+
+```kotlin
+// Must be called in Activity/Fragment lifecycle
+override fun onPause() {
+    super.onPause()
+    glSurfaceView.onPause()
+}
+
+override fun onResume() {
+    super.onResume()
+    glSurfaceView.onResume()
+}
+```
+
+### Compose Helpers
+
+#### VanishContainer
+
+```kotlin
+@Composable
+fun VanishContainer(
+    modifier: Modifier = Modifier,
+    onGLSurfaceViewCreated: (VanishGLSurfaceView) -> Unit = {},
+    content: @Composable BoxScope.() -> Unit
+)
+```
+
+Wraps your content with a transparent GLSurfaceView overlay for rendering particles.
+
+#### rememberVanishController
+
+```kotlin
+@Composable
+fun rememberVanishController(
+    glSurfaceView: VanishGLSurfaceView?
+): VanishController
+```
+
+Creates and remembers a VanishController instance. Returns a non-null controller immediately (uses placeholder until GLSurfaceView is ready).
+
+#### Modifier.vanishable
+
+```kotlin
+@Composable
+fun Modifier.vanishable(
+    vanishController: VanishController,
+    backgroundColor: Color = Color.White
+): Modifier
+```
+
+Marks a composable as vanishable and captures its content for the animation.
+
+** REQUIRED:** The `backgroundColor` parameter must match your composable's actual background color.
+
+---
+
+## Customization
+
+### Animation Duration and Particle Size
+
+Control how the animation looks and behaves:
+
+```kotlin
+// In Compose
+VanishContainer(
+    onGLSurfaceViewCreated = { view ->
+        view.setAnimationConfig(
+            duration = 2500f,      // 2.5 seconds (default: 1800ms)
+            particleSize = 4f      // Larger particles (default: 2.0f)
+        )
+    }
+)
+
+// In XML/Activity
+glSurfaceView.setAnimationConfig(
+    duration = 2500f,
+    particleSize = 4f
+)
+```
+
+**Effect of parameters:**
+- **duration:** Lower = faster disintegration, Higher = slower, more dramatic effect
+- **particleSize:** Lower = more particles (finer effect), Higher = fewer, larger particles
+
+### Custom Background Colors
+
+For non-solid backgrounds or gradients:
+
+```kotlin
+// Solid color background
+val bgColor = Color(0xFFFF6B6B)
+Box(
+    modifier = Modifier
+        .background(bgColor)
+        .vanishable(controller, backgroundColor = bgColor)
+)
+
+// Gradient backgrounds - use the dominant color
+val gradientBrush = Brush.verticalGradient(
+    colors = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+)
+Box(
+    modifier = Modifier
+        .background(gradientBrush)
+        .vanishable(controller, backgroundColor = Color(0xFF667EEA)) // Use dominant color
+)
+```
+
+> **Note:** For gradient backgrounds, use the dominant or average color. The particle system works best with solid colors.
+
+---
+
+##  Important Guidelines & Best Practices
+
+### 1. Background Color Matching
+
+**Always pass the correct background color** to `.vanishable()`:
+
+```kotlin
+//CORRECT
+val bgColor = Color.Red
+Box(
+    modifier = Modifier
+        .background(bgColor)
+        .vanishable(controller, backgroundColor = bgColor)
+)
+
+// INCORRECT - Animation won't render properly
+Box(
+    modifier = Modifier
+        .background(Color.Red)
+        .vanishable(controller) // Missing or wrong background color
+)
+```
+
+### 2. Content Visibility Timing
+
+**Wait 100-200ms** after calling `vanish()` before hiding content:
+
+```kotlin
+// CORRECT
+controller.vanish()
+scope.launch {
+    delay(100) // Give time for frame capture
+    showContent = false
+}
+
+// INCORRECT - May not capture frame properly
+controller.vanish()
+showContent = false // Too fast!
+```
+
+### 3. GLSurfaceView Lifecycle
+
+**Always handle lifecycle** in Activities and Fragments:
+
+```kotlin
+// CORRECT
+override fun onPause() {
+    super.onPause()
+    glSurfaceView.onPause()
+}
+
+override fun onResume() {
+    super.onResume()
+    glSurfaceView.onResume()
+}
+
+// INCORRECT - Missing lifecycle handling leads to crashes
+```
+
+### 4. Layout Z-Order (XML)
+
+**GLSurfaceView must be first child** in FrameLayout:
+
+```xml
+<!-- CORRECT -->
+<FrameLayout>
+    <com.vanisheffect.library.VanishGLSurfaceView ... />
+    <YourContent ... />
+</FrameLayout>
+
+<!-- INCORRECT - Particles won't appear on top -->
+<FrameLayout>
+    <YourContent ... />
+    <com.vanisheffect.library.VanishGLSurfaceView ... />
+</FrameLayout>
+```
+
+### 5. Reset After Vanish
+
+**Reset the controller** when showing content again:
+
+```kotlin
+//  CORRECT
+Button(onClick = {
+    showContent = true
+    controller.reset() // Clear animation state
+})
+
+//  INCORRECT - May cause animation issues
+Button(onClick = {
+    showContent = true // Missing reset
+})
+```
+
+### 6. Re-attachment for XML Views
+
+**Re-attach controller** after reset in XML layouts:
+
+```kotlin
+//  CORRECT
+resetButton.setOnClickListener {
+    contentView.visibility = View.VISIBLE
+    controller.reset()
+    
+    contentView.post {
+        controller = VanishEffect.attachToView(contentView, glSurfaceView)
+    }
+}
+```
+
+---
+
+## 🎯 Common Use Cases
+
+### 1. Onboarding Screens
+
+```kotlin
+@Composable
+fun OnboardingScreen() {
+    var currentScreen by remember { mutableStateOf(0) }
+    val controller = rememberVanishController(glSurfaceView)
+    
+    // Vanish current screen when moving to next
+    Button(onClick = {
+        controller.vanish()
+        scope.launch {
+            delay(100)
+            currentScreen++
+        }
+    })
+}
+```
+
+### 2. Item Deletion Animation
+
+```kotlin
+@Composable
+fun ItemList(items: List<Item>) {
+    items.forEach { item ->
+        val controller = rememberVanishController(glSurfaceView)
+        
+        ItemCard(
+            item = item,
+            modifier = Modifier.vanishable(controller, itemColor),
+            onDelete = {
+                controller.vanish()
+                scope.launch {
+                    delay(100)
+                    viewModel.deleteItem(item)
+                }
+            }
+        )
+    }
+}
+```
+
+### 3. Game Elements
+
+```kotlin
+@Composable
+fun GameEnemy(enemy: Enemy) {
+    val controller = rememberVanishController(glSurfaceView)
+    
+    if (enemy.isAlive) {
+        Image(
+            painter = painterResource(enemy.image),
+            modifier = Modifier.vanishable(controller, Color.Transparent)
+        )
+    }
+    
+    // When hit
+    if (enemy.isHit) {
+        controller.vanish()
+    }
+}
+```
+
+### 4. Success/Completion Effects
+
+```kotlin
+@Composable
+fun TaskCompleteEffect() {
+    var showTask by remember { mutableStateOf(true) }
+    val controller = rememberVanishController(glSurfaceView)
+    
+    TaskCard(
+        modifier = Modifier.vanishable(controller, taskColor),
+        onComplete = {
+            controller.vanish()
+            playSuccessSound()
+            scope.launch {
+                delay(100)
+                showTask = false
+            }
+        }
+    )
+}
+```
+
+---
+
+## Troubleshooting
+
+### Animation Not Visible
+
+**Problem:** Particles don't appear or animation doesn't work.
+
+**Solutions:**
+1.  Ensure `backgroundColor` parameter matches actual background
+2.  Check GLSurfaceView is first child in XML layouts
+3.  Verify `onGLSurfaceViewCreated` callback is being called
+4.  Add 100ms delay before hiding content
+
+### App Crashes on Pause/Resume
+
+**Problem:** App crashes when minimizing or rotating.
+
+**Solutions:**
+1.  Add `glSurfaceView.onPause()` in `onPause()`
+2.  Add `glSurfaceView.onResume()` in `onResume()`
+3.  Implement in both Activities and Fragments
+
+### Black Screen After Animation
+
+**Problem:** Content disappears but shows black instead of transparent.
+
+**Solutions:**
+1.  Verify GLSurfaceView has transparent configuration (library handles this)
+2.  Check parent container background color
+3.  Ensure `setZOrderOnTop(true)` is set (library handles this)
+
+### Animation Too Fast/Slow
+
+**Problem:** Animation duration doesn't feel right.
+
+**Solutions:**
+```kotlin
+// Slower animation (more dramatic)
+glSurfaceView.setAnimationConfig(duration = 2500f)
+
+// Faster animation (snappier)
+glSurfaceView.setAnimationConfig(duration = 1200f)
+```
+
+### Particles Look Pixelated
+
+**Problem:** Particles appear too large or blocky.
+
+**Solutions:**
+```kotlin
+// Smaller, finer particles
+glSurfaceView.setAnimationConfig(particleSize = 1f)
+
+// Larger particles (may look blocky)
+glSurfaceView.setAnimationConfig(particleSize = 5f)
+```
+
+---
+
+## Requirements
+
+- **Minimum SDK:** 24 (Android 5.0 Lollipop)
+- **Target SDK:** 34+
+- **Kotlin:** 1.8.0+
+- **Jetpack Compose:** 1.5.0+ (for Compose usage only)
+- **OpenGL ES:** 2.0 support (present on all Android 5.0+ devices)
+
+---
+
+## License
+
+```
+MIT License
+
+Copyright (c) 2025 Exjunk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## Support
+
+- **Issues:** [GitHub Issues](https://github.com/exjunk/ThanosEffect/issues)
+- **Email:** hello@androiddevapps.com
+
+If you find this library helpful, please ⭐ **star the repository**!
+
+**Made with ❤️ and for the Android community**

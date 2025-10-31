@@ -3,7 +3,11 @@ package com.exjunk.lib.thanos.vanish
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.PixelFormat
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Picture
+import android.graphics.Rect
+import android.opengl.ETC1Util.loadTexture
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
@@ -12,59 +16,22 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import androidx.core.graphics.createBitmap
 
 /**
- * Enhanced GLSurfaceView with configurable parameters and bitmap support
+ * OpenGL ES 2.0 Renderer for vanish particle effect
+ * Handles particle system rendering and animation
  */
-class DustGLSurfaceView(
-    context: Context,
-    private val duration: Float = 1800f,
-    private val particleSize: Float = 2f
-) : GLSurfaceView(context) {
-
-    private val renderer: DustRenderer
-
-    init {
-        setEGLContextClientVersion(2)
-        setZOrderOnTop(true)
-        setEGLConfigChooser(8, 8, 8, 8, 16, 0)
-        holder.setFormat(PixelFormat.RGBA_8888)
-
-        renderer = DustRenderer(context, duration, particleSize)
-        setRenderer(renderer)
-        renderMode = RENDERMODE_CONTINUOUSLY
-    }
-
-    /**
-     * Start animation with bitmap and optional callback
-     */
-    fun startAnimation(bitmap: Bitmap, onComplete: (() -> Unit)? = null) {
-        renderer.startAnimation(bitmap, onComplete)
-    }
-
-    /**
-     * Reset animation state
-     */
-    fun reset() {
-        renderer.reset()
-    }
-}
-
-/**
- * OpenGL renderer with enhanced bitmap support
- */
-class DustRenderer(
-    private val context: Context,
-    private val duration: Float = 1800f,
-    private val particleSize: Float = 2f
-) : GLSurfaceView.Renderer {
+class VanishRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     private var programId = 0
     private var aParticleIndex = 0
 
     private var animationStartTime = -1L
     private var isAnimating = false
-    private var onCompleteCallback: (() -> Unit)? = null
+
+    private var duration = 1800f
+    private var particleSize = 2f
 
     private var textureId = 0
     private var particlesIndicesBuffer: FloatBuffer? = null
@@ -78,7 +45,16 @@ class DustRenderer(
     private var viewportWidth = 0
     private var viewportHeight = 0
 
+    private var pendingBitmap: Bitmap? = null
+    private var pendingRect: Rect? = null
+    private var shouldStartAnimation = false
+    private var pendingBackgroundColor: Int = android.graphics.Color.WHITE
+
+    /**
+     * Called when the surface is created or recreated
+     */
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
         GLES20.glEnable(GLES20.GL_BLEND)
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
@@ -93,6 +69,9 @@ class DustRenderer(
         aParticleIndex = GLES20.glGetAttribLocation(programId, "a_ParticleIndex")
     }
 
+    /**
+     * Called when the surface dimensions change
+     */
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         viewportWidth = width
         viewportHeight = height
@@ -104,8 +83,29 @@ class DustRenderer(
         setUniform1f("u_ViewportHeight", height.toFloat())
     }
 
+    /**
+     * Called to draw the current frame
+     */
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+
+        if (shouldStartAnimation && pendingBitmap != null && pendingRect != null) {
+            val bitmap = pendingBitmap!!
+            val rect = pendingRect!!
+
+            loadTexture(bitmap)
+            prepareParticles(bitmap.width, bitmap.height)
+
+            textureLeft = rect.left.toFloat()
+            textureTop = rect.top.toFloat()
+
+            isAnimating = true
+            animationStartTime = -1
+
+            pendingBitmap = null
+            pendingRect = null
+            shouldStartAnimation = false
+        }
 
         if (!isAnimating) return
 
@@ -119,8 +119,6 @@ class DustRenderer(
         if (elapsedTime > duration) {
             isAnimating = false
             animationStartTime = -1
-            onCompleteCallback?.invoke()
-            onCompleteCallback = null
             return
         }
 
@@ -148,45 +146,104 @@ class DustRenderer(
     }
 
     /**
-     * Start animation with provided bitmap
+     * Starts animation with Picture object
      */
-    fun startAnimation(bitmap: Bitmap, onComplete: (() -> Unit)? = null) {
-        onCompleteCallback = onComplete
-
-        // Calculate texture positioning (center in viewport)
-        textureLeft = (viewportWidth - bitmap.width) / 2f
-        textureTop = (viewportHeight - bitmap.height) / 2f
-
-        loadTexture(bitmap)
-        prepareParticles(bitmap.width, bitmap.height)
-
-        isAnimating = true
-        animationStartTime = -1
+    fun startAnimation(picture: Picture, rect: Rect, backgroundColor: Int = android.graphics.Color.WHITE) {
+        val bitmap = createBitmapFromPicture(picture, rect, backgroundColor)
+        startAnimationWithBitmap(bitmap, rect)
     }
 
     /**
-     * Reset animation state
+     * Starts animation with Bitmap object
      */
-    fun reset() {
-        isAnimating = false
-        animationStartTime = -1
-        onCompleteCallback = null
+    fun startAnimationWithBitmap(bitmap: Bitmap, rect: Rect) {
+        if (bitmap.width == 0 || bitmap.height == 0) {
+            return
+        }
+
+        pendingBitmap = bitmap
+        pendingRect = rect
+        shouldStartAnimation = true
     }
 
+    /**
+     * Resets animation state
+     */
+    fun resetAnimation() {
+        isAnimating = false
+        animationStartTime = -1
+        shouldStartAnimation = false
+    }
+
+    /**
+     * Configures animation parameters
+     */
+    fun setAnimationConfig(animDuration: Float, particleSize: Float) {
+        this.duration = animDuration
+        this.particleSize = particleSize
+    }
+
+    /**
+     * Creates bitmap from Picture with background
+     */
+    private fun createBitmapFromPicture(picture: Picture, rect: Rect, backgroundColor: Int): Bitmap {
+        val width = if (picture.width > 0) picture.width else rect.width()
+        val height = if (picture.height > 0) picture.height else rect.height()
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val paint = android.graphics.Paint().apply {
+            color = backgroundColor  // Use the passed color instead of hardcoded white
+            style = android.graphics.Paint.Style.FILL
+        }
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+        canvas.drawPicture(picture)
+
+        return bitmap
+    }
+
+    /**
+     * Loads bitmap into OpenGL texture
+     */
     private fun loadTexture(bitmap: Bitmap) {
         val textureHandle = IntArray(1)
         GLES20.glGenTextures(1, textureHandle, 0)
 
         if (textureHandle[0] != 0) {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0])
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MIN_FILTER,
+                GLES20.GL_LINEAR
+            )
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_LINEAR
+            )
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_WRAP_S,
+                GLES20.GL_CLAMP_TO_EDGE
+            )
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_WRAP_T,
+                GLES20.GL_CLAMP_TO_EDGE
+            )
+
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
         }
 
         textureId = textureHandle[0]
     }
 
+    /**
+     * Prepares particle system for animation
+     */
     private fun prepareParticles(bitmapWidth: Int, bitmapHeight: Int) {
         textureWidth = (bitmapWidth / particleSize).toInt()
         textureHeight = (bitmapHeight / particleSize).toInt()
@@ -201,6 +258,9 @@ class DustRenderer(
         particlesIndicesBuffer?.position(0)
     }
 
+    /**
+     * Loads and compiles shader
+     */
     private fun loadShader(type: Int, shaderCode: String): Int {
         val shader = GLES20.glCreateShader(type)
         GLES20.glShaderSource(shader, shaderCode)
@@ -208,6 +268,9 @@ class DustRenderer(
         return shader
     }
 
+    /**
+     * Sets uniform float value in shader
+     */
     private fun setUniform1f(name: String, value: Float) {
         val location = GLES20.glGetUniformLocation(programId, name)
         GLES20.glUniform1f(location, value)
