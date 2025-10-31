@@ -3,7 +3,7 @@
 A stunning Android library that creates the iconic Thanos snap disintegration effect for your UI elements. Powered by OpenGL ES 2.0 with seamless support for both **Jetpack Compose** and **traditional XML layouts**.
 Animation is similar  to Telegram's delete message animation 
 
-[![](https://jitpack.io/v/exjunk/vanish-effect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
+[![](https://jitpack.io/v/exjunk/ThanosEffect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
@@ -18,7 +18,8 @@ Animation is similar  to Telegram's delete message animation
 
 ## Demo
 
-![Vanish Effect Demo](demo.gif)
+![Vanish Effect Demo](https://github.com/user-attachments/assets/0253ca1f-c23b-4c26-a8d6-2aa19c371373)
+
 
 ## Installation
 
