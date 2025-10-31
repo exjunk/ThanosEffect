@@ -57,7 +57,7 @@ Add to your app-level `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.github.exjunk:ThanosEffect:1.0.1'
+    implementation 'com.github.exjunk:ThanosEffect:1.0.2'
 }
 ```
 
