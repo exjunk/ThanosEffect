@@ -4,7 +4,6 @@ A stunning Android library that creates the iconic Thanos snap disintegration ef
 Animation is similar  to Telegram's delete message animation 
 
 [![](https://jitpack.io/v/exjunk/ThanosEffect.svg)](https://jitpack.io/#exjunk/ThanosEffect)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
 
