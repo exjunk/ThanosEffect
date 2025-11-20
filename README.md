@@ -102,7 +102,7 @@ fun QuickStartExample() {
 }
 ```
 
-> ** IMPORTANT:** Always pass `backgroundColor` to `.vanishable()` matching your composable's actual background color. This is required for accurate particle rendering.
+> **IMPORTANT:** Always pass `backgroundColor` to `.vanishable()` matching your composable's actual background color. This is required for accurate particle rendering.
 
 ---
 
